@@ -1,4 +1,4 @@
-package su.litvak;
+package su.litvak.xonix;
 
 import java.awt.*;
 import java.util.HashSet;

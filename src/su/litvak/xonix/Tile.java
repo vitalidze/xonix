@@ -1,4 +1,4 @@
-package su.litvak;
+package su.litvak.xonix;
 
 /**
  * Created with IntelliJ IDEA.
