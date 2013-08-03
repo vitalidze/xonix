@@ -62,23 +62,34 @@ public class Field {
         Set<Point> part2 = new HashSet<Point>();
 
         /**
-         * Find opposite points
+         * Walk through border, find opposite points
          */
-        final Point point = border.get(0);
-        final int x = point.x;
-        final int y = point.y;
+        for (Point point : border) {
+            final int x = point.x;
+            final int y = point.y;
 
-        /**
-         * Movement was vertical, check left and right parts,
-         * check top and bottom parts in any other case
-         */
-        if (border.contains(new Point(x, y - 1)) ||
-            border.contains(new Point(x, y + 1))) {
-            fill(x - 1, y, borderSet, part1);
-            fill(x + 1, y, borderSet, part2);
-        } else {
-            fill(x, y - 1, borderSet, part1);
-            fill(x, y + 1, borderSet, part2);
+            /**
+             * Movement was vertical, check left and right parts,
+             * check top and bottom parts in any other case
+             */
+            if (border.contains(new Point(x, y - 1)) ||
+                border.contains(new Point(x, y + 1))) {
+                fill(x - 1, y, borderSet, part1);
+                fill(x + 1, y, borderSet, part2);
+            } else {
+                fill(x, y - 1, borderSet, part1);
+                fill(x, y + 1, borderSet, part2);
+            }
+
+            /**
+             * Try to find non-empty areas
+             */
+            if (!part1.isEmpty() && !part2.isEmpty()) {
+                break;
+            } else {
+                part1.clear();
+                part2.clear();
+            }
         }
 
         Set<Point> toFill = part1.size() > part2.size() ? part2 : part1;

@@ -99,6 +99,18 @@ public class FieldCutTest {
         new FieldFixture(5, 5).path(5, 4, 5, 5).check();
         new FieldFixture(5, 5).path(2, 5, 3, 5, 4, 5, 5, 5).check();
         new FieldFixture(5, 5).path(1, 2, 1, 3, 1, 4).check();
+    }
 
+    @Test
+    public void testZeroStartNonZeroEnd() {
+        new FieldFixture(5, 5)
+            .path(1, 5,
+                  1, 4,
+                  1, 3,
+                  2, 3,
+                  2, 2,
+                  2, 1)
+            .waterRect(1, 1, 2, 2)
+        .check();
     }
 }

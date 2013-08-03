@@ -27,7 +27,7 @@ public class FieldFixture {
     }
 
     FieldFixture path(int... points) {
-        heroPath.addAll(set(points));
+        heroPath.addAll(list(points));
         return this;
     }
 
@@ -43,6 +43,14 @@ public class FieldFixture {
             }
         }
         return this;
+    }
+
+    private List<Point> list(int... points) {
+        List<Point> result = new ArrayList<Point>(points.length / 2);
+        for (int i = 0; i < points.length; i += 2) {
+            result.add(new Point(points[i], points[i + 1]));
+        }
+        return result;
     }
 
     private Set<Point> set(int... points) {
