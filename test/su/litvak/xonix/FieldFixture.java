@@ -2,9 +2,11 @@ package su.litvak.xonix;
 
 import org.junit.Assert;
 
-import java.awt.*;
+import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,7 +18,7 @@ import java.util.Set;
 public class FieldFixture {
     final int width;
     final int height;
-    Set<Point> heroPath = new HashSet<Point>();
+    List<Point> heroPath = new ArrayList<Point>();
     Set<Point> expectedWater = new HashSet<Point>();
 
     FieldFixture(int width, int height) {

@@ -1,8 +1,9 @@
 package su.litvak.xonix;
 
-import java.awt.*;
+import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -51,18 +52,19 @@ public class Field {
      *
      * @param border    border separating field into two areas, one of which will be cut off
      */
-    public void cut(Set<Point> border) {
+    public void cut(List<Point> border) {
         if (border.size() < 2) {
             throw new IllegalArgumentException();
         }
 
+        Set<Point> borderSet = new HashSet<Point>(border);
         Set<Point> part1 = new HashSet<Point>();
         Set<Point> part2 = new HashSet<Point>();
 
         /**
          * Find opposite points
          */
-        final Point point = border.iterator().next();
+        final Point point = border.get(0);
         final int x = point.x;
         final int y = point.y;
 
@@ -72,11 +74,11 @@ public class Field {
          */
         if (border.contains(new Point(x, y - 1)) ||
             border.contains(new Point(x, y + 1))) {
-            fill(x - 1, y, border, part1);
-            fill(x + 1, y, border, part2);
+            fill(x - 1, y, borderSet, part1);
+            fill(x + 1, y, borderSet, part2);
         } else {
-            fill(x, y - 1, border, part1);
-            fill(x, y + 1, border, part2);
+            fill(x, y - 1, borderSet, part1);
+            fill(x, y + 1, borderSet, part2);
         }
 
         Set<Point> toFill = part1.size() > part2.size() ? part2 : part1;
