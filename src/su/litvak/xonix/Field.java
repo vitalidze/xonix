@@ -25,20 +25,28 @@ public class Field {
         width = tiles.length;
         height = tiles[0].length;
 
+        /**
+         * Fill earth and water
+         */
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 tiles[x][y] = ((x == 0 || x == width - 1) && y >= 0) ||
                               ((y == 0 || y == height - 1) && x >= 0) ? Tile.WATER : Tile.EARTH;
             }
         }
+
+        /**
+         * Put hero to the upper left corner
+         */
+        tiles[0][0] = Tile.HERO;
     }
 
     @Override
     public String toString() {
         String result = "";
 
-        for (int y = 0; y < tiles[0].length; y++) {
-            for (int x = 0; x < tiles.length; x++) {
+        for (int y = 0; y < getRows(); y++) {
+            for (int x = 0; x < getCols(); x++) {
                 result += tiles[x][y].symbol + " ";
             }
             result += "\r\n";
@@ -53,10 +61,6 @@ public class Field {
      * @param border    border separating field into two areas, one of which will be cut off
      */
     public void cut(List<Point> border) {
-        if (border.size() < 2) {
-            throw new IllegalArgumentException();
-        }
-
         Set<Point> borderSet = new HashSet<Point>(border);
         Set<Point> part1 = new HashSet<Point>();
         Set<Point> part2 = new HashSet<Point>();
@@ -111,8 +115,8 @@ public class Field {
     private void fill(int x, int y, Set<Point> border, Set<Point> filled) {
         Point p = new Point(x, y);
 
-        Tile t = x > 0 && x < tiles.length - 1 &&
-                 y > 0 && y < tiles[0].length - 1 ? tiles[x][y] : null;
+        Tile t = x > 0 && x < getCols() - 1 &&
+                 y > 0 && y < getRows() - 1 ? tiles[x][y] : null;
 
         if (t == Tile.EARTH && !filled.contains(p) && !border.contains(p)) {
             filled.add(p);
@@ -121,5 +125,19 @@ public class Field {
             fill(x, y - 1, border, filled);
             fill(x, y + 1, border, filled);
         }
+    }
+
+    /**
+     * @return  total number of columns
+     */
+    public int getCols() {
+        return tiles.length;
+    }
+
+    /**
+     * @return  total number of rows
+     */
+    public int getRows() {
+        return tiles[0].length;
     }
 }
