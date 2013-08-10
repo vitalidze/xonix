@@ -37,6 +37,7 @@ public class Frame extends JFrame {
         public void actionPerformed(ActionEvent e) {
             /**
              * TODO save hero coordinates somewhere
+             * TODO move this method to a new controller class (i.e. method, which moves hero). Do the same with cutting method in Field class.
              */
             for (int i = 0; i < field.getCols(); i++) {
                 for (int j = 0; j < field.getRows(); j++) {

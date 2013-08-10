@@ -15,8 +15,7 @@ import java.util.Set;
  * To change this template use File | Settings | File Templates.
  */
 public class FieldCutTest {
-    FieldFixture field;
-
+    // TODO write Emily diagonal test case (left-up-left-up)
     @Test
     public void testVerticalCut1() {
         new FieldFixture(5, 5)
