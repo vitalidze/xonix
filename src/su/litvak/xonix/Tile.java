@@ -9,18 +9,11 @@ import java.awt.*;
  * Time: 23:30
  * To change this template use File | Settings | File Templates.
  */
-public enum Tile {
-    EARTH('+', Color.YELLOW),
-    WATER('O', Color.BLUE),
-    HERO('H', Color.GREEN),
-    ENEMY('E', Color.RED),
-    PATH('x', Color.BLACK);
+public class Tile extends Point {
+    TileState state;
 
-    final char symbol;
-    final Color color;
-
-    private Tile(char symbol, Color color) {
-        this.symbol = symbol;
-        this.color = color;
+    public Tile(int x, int y, TileState state) {
+        super(x, y);
+        this.state = state;
     }
 }

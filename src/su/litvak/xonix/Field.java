@@ -1,6 +1,7 @@
 package su.litvak.xonix;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
@@ -14,6 +15,8 @@ import java.util.List;
  */
 public class Field {
     Tile[][] tiles;
+    List<Tile> path;
+    Tile hero;
 
     /**
      * @param width     width of earth part of the battlefield
@@ -30,15 +33,23 @@ public class Field {
          */
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                tiles[x][y] = ((x == 0 || x == width - 1) && y >= 0) ||
-                              ((y == 0 || y == height - 1) && x >= 0) ? Tile.WATER : Tile.EARTH;
+                TileState tileState =
+                        ((x == 0 || x == width - 1) && y >= 0) ||
+                        ((y == 0 || y == height - 1) && x >= 0) ? TileState.WATER : TileState.EARTH;
+
+                tiles[x][y] = new Tile(x, y, tileState);
             }
         }
 
         /**
          * Put hero to the upper left corner
          */
-        tiles[0][0] = Tile.HERO;
+        hero = new Tile(0, 0, TileState.HERO);
+
+        /**
+         * Initialize path
+         */
+        path = new ArrayList<Tile>();
     }
 
     @Override
@@ -47,7 +58,7 @@ public class Field {
 
         for (int y = 0; y < getRows(); y++) {
             for (int x = 0; x < getCols(); x++) {
-                result += tiles[x][y].symbol + " ";
+                result += tiles[x][y].state.symbol + " ";
             }
             result += "\r\n";
         }
@@ -57,13 +68,12 @@ public class Field {
 
     /**
      * Cuts off area, which is smaller of the two parts divided by specified border
-     *
-     * @param border    border separating field into two areas, one of which will be cut off
      */
-    public void cut(List<Point> border) {
-        Set<Point> borderSet = new HashSet<Point>(border);
-        Set<Point> part1 = new HashSet<Point>();
-        Set<Point> part2 = new HashSet<Point>();
+    public void cut() {
+        List<Tile> border = getPath();
+        Set<Tile> borderSet = new HashSet<Tile>(border);
+        Set<Tile> part1 = new HashSet<Tile>();
+        Set<Tile> part2 = new HashSet<Tile>();
 
         /**
          * Walk through border, find opposite points
@@ -76,13 +86,13 @@ public class Field {
              * Movement was vertical, check left and right parts,
              * check top and bottom parts in any other case
              */
-            if (border.contains(new Point(x, y - 1)) ||
-                border.contains(new Point(x, y + 1))) {
-                fill(x - 1, y, borderSet, part1);
-                fill(x + 1, y, borderSet, part2);
+            if (borderSet.contains(getTile(x, y - 1)) ||
+                borderSet.contains(getTile(x, y + 1))) {
+                fill(getTile(x - 1, y), borderSet, part1);
+                fill(getTile(x + 1, y), borderSet, part2);
             } else {
-                fill(x, y - 1, borderSet, part1);
-                fill(x, y + 1, borderSet, part2);
+                fill(getTile(x, y - 1), borderSet, part1);
+                fill(getTile(x, y + 1), borderSet, part2);
             }
 
             /**
@@ -96,34 +106,30 @@ public class Field {
             }
         }
 
-        Set<Point> toFill = part1.size() > part2.size() ? part2 : part1;
-        toFill.addAll(border);
+        Set<Tile> toFill = part1.size() > part2.size() ? part2 : part1;
+        toFill.addAll(borderSet);
 
         for (Point p : toFill) {
-            tiles[p.x][p.y] = Tile.WATER;
+            tiles[p.x][p.y].state = TileState.WATER;
         }
+
+        getPath().clear();
     }
 
     /**
      * Recursively fills area below the border starting from specified point
      *
-     * @param x         x coordinate of a potential point to fill
-     * @param y         y coordinate of a potential point to fill
+     * @param point     potential point to fill
      * @param border    set of points representing shape border
      * @param filled    set of points already filled
      */
-    private void fill(int x, int y, Set<Point> border, Set<Point> filled) {
-        Point p = new Point(x, y);
-
-        Tile t = x > 0 && x < getCols() - 1 &&
-                 y > 0 && y < getRows() - 1 ? tiles[x][y] : null;
-
-        if (t == Tile.EARTH && !filled.contains(p) && !border.contains(p)) {
-            filled.add(p);
-            fill(x - 1, y, border, filled);
-            fill(x + 1, y, border, filled);
-            fill(x, y - 1, border, filled);
-            fill(x, y + 1, border, filled);
+    private void fill(Tile point, Set<Tile> border, Set<Tile> filled) {
+        if (point != null && point.state == TileState.EARTH && !filled.contains(point) && !border.contains(point)) {
+            filled.add(point);
+            fill(getTile(point.x - 1, point.y), border, filled);
+            fill(getTile(point.x + 1, point.y), border, filled);
+            fill(getTile(point.x, point.y - 1), border, filled);
+            fill(getTile(point.x, point.y + 1), border, filled);
         }
     }
 
@@ -139,5 +145,44 @@ public class Field {
      */
     public int getRows() {
         return tiles[0].length;
+    }
+
+    /**
+     * TODO comments
+     *
+     * @param x
+     * @param y
+     * @return
+     */
+    public Tile getTile(int x, int y) {
+        return x >= 0 && x < getCols() &&
+               y >= 0 && y < getRows() ? tiles[x][y] : null;
+    }
+
+    /**
+     * TODO comments
+     *
+     * @return
+     */
+    public List<Tile> getPath() {
+        return path;
+    }
+
+    public void moveHero(int dx, int dy) {
+        int newX = hero.x + dx;
+        int newY = hero.y + dy;
+
+        if (newX >= 0 && newY >= 0 &&
+            newX < getCols() && newY < getRows()) {
+            if (tiles[hero.x][hero.y].state == TileState.EARTH) {
+                tiles[hero.x][hero.y].state = TileState.PATH;
+                path.add(tiles[hero.x][hero.y]);
+            }
+            hero.x = newX;
+            hero.y = newY;
+            if (tiles[newX][newY].state == TileState.WATER && !path.isEmpty()) {
+                cut();
+            }
+        }
     }
 }

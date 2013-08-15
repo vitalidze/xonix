@@ -22,7 +22,6 @@ public class Frame extends JFrame {
     JPanel jpMain = new JPanel();
     Field field;
     JLabel[][] labels;
-    Set<Point> path;
 
     private class HeroMoveAction extends AbstractAction {
         int dx;
@@ -36,35 +35,10 @@ public class Frame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             /**
-             * TODO save hero coordinates somewhere
              * TODO move this method to a new controller class (i.e. method, which moves hero). Do the same with cutting method in Field class.
              */
-            for (int i = 0; i < field.getCols(); i++) {
-                for (int j = 0; j < field.getRows(); j++) {
-                    if (field.tiles[i][j] == Tile.HERO) {
-                        int newX = i + dx;
-                        int newY = j + dy;
-
-                        if (newX >= 0 && newY >= 0 &&
-                            newX < field.getCols() && newY < field.getRows()) {
-
-                            field.tiles[i][j] = path.contains(new Point(i, j)) ? Tile.PATH : Tile.WATER;
-                            if (field.tiles[newX][newY] == Tile.EARTH) {
-                                path.add(new Point(newX, newY));
-                            } else if (field.tiles[newX][newY] == Tile.WATER && !path.isEmpty()) {
-                                field.cut(new ArrayList<Point>(path));
-                                path.clear();
-                            }
-
-                            field.tiles[newX][newY] = Tile.HERO;
-
-                            fireFieldChanged();
-                        }
-
-                        return;
-                    }
-                }
-            }
+            field.moveHero(dx, dy);
+            fireFieldChanged();
         }
     }
 
@@ -102,7 +76,6 @@ public class Frame extends JFrame {
      */
     public void setField(Field field) {
         this.field = field;
-        this.path = new HashSet<Point>();
 
         setTitle("Xonix " + (field.getCols() - 2) + "x" + (field.getRows() - 2));
         jpMain.removeAll();
@@ -146,7 +119,11 @@ public class Frame extends JFrame {
             for (int j = 0; j < field.getRows(); j++) {
                 Tile t = field.tiles[i][j];
                 JLabel l = labels[i][j];
-                l.setBackground(t.color);
+                if (field.hero.x == i && field.hero.y == j) {
+                    l.setBackground(field.hero.state.color);
+                } else {
+                    l.setBackground(t.state.color);
+                }
             }
         }
 
