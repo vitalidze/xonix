@@ -65,24 +65,24 @@ public class FieldFixture {
         Field actual = new Field(width, height);
         List<Tile> pathTiles = new ArrayList<Tile>(heroPath.size());
         for (Point p : heroPath) {
-            pathTiles.add(new Tile(p.x, p.y, TileState.PATH));
+            pathTiles.add(actual.getTile(p.x, p.y));
         }
-        actual.path = pathTiles;
+        actual.setPath(pathTiles);
         actual.cut();
 
         Field expected = new Field(width, height);
         for (Point p : heroPath) {
-            expected.tiles[p.x][p.y].state = TileState.WATER;
+            expected.getTile(p.x, p.y).state = TileState.WATER;
         }
         for (Point p : expectedWater) {
-            expected.tiles[p.x][p.y].state = TileState.WATER;
+            expected.getTile(p.x, p.y).state = TileState.WATER;
         }
 
         String message = "Field mismatch. Expected: \n\n" + expected + " \nBut was: \n\n" + actual;
 
         for (int x = 0; x < width + 2; x++) {
             for (int y = 0; y < height + 2; y++) {
-                Assert.assertTrue(message, expected.tiles[x][y].state == actual.tiles[x][y].state);
+                Assert.assertTrue(message, expected.getTile(x, y).state == actual.getTile(x, y).state);
             }
         }
     }

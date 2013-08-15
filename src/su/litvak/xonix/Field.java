@@ -14,9 +14,10 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class Field {
-    Tile[][] tiles;
-    List<Tile> path;
-    Tile hero;
+    private Tile[][] tiles;
+    private List<Tile> path;
+    private Tile hero;
+    private List<FieldChangeListener> changeListeners;
 
     /**
      * @param width     width of earth part of the battlefield
@@ -109,8 +110,9 @@ public class Field {
         Set<Tile> toFill = part1.size() > part2.size() ? part2 : part1;
         toFill.addAll(borderSet);
 
-        for (Point p : toFill) {
-            tiles[p.x][p.y].state = TileState.WATER;
+        for (Tile tile : toFill) {
+            tile.state = TileState.WATER;
+            fireChange(tile);
         }
 
         getPath().clear();
@@ -148,11 +150,13 @@ public class Field {
     }
 
     /**
-     * TODO comments
+     * <p>Looks for existing tile in a field. Will return null if coordinates are invalid.</p>
      *
-     * @param x
-     * @param y
-     * @return
+     * <p>Never throws IndexOutOfBoundsException.</p>
+     *
+     * @param x x-coordinate of desired tile
+     * @param y y-coordinate of desired tile
+     * @return  field tile, null if coordinates point out of field bounds
      */
     public Tile getTile(int x, int y) {
         return x >= 0 && x < getCols() &&
@@ -160,29 +164,106 @@ public class Field {
     }
 
     /**
-     * TODO comments
-     *
-     * @return
+     * @return  current path of hero
      */
     public List<Tile> getPath() {
         return path;
     }
 
+    /**
+     * Set up path of hero. Used in tests only
+     *
+     * @param path
+     * @deprecated  to be used in tests only
+     */
+    public void setPath(List<Tile> path) {
+        this.path = path;
+    }
+
+    /**
+     * Moves hero according to specified differences in x/y coordinates
+     *
+     * @param dx
+     * @param dy
+     */
     public void moveHero(int dx, int dy) {
-        int newX = hero.x + dx;
-        int newY = hero.y + dy;
+        int oldX = hero.x;
+        int oldY = hero.y;
+        int newX = oldX + dx;
+        int newY = oldY + dy;
 
         if (newX >= 0 && newY >= 0 &&
             newX < getCols() && newY < getRows()) {
-            if (tiles[hero.x][hero.y].state == TileState.EARTH) {
-                tiles[hero.x][hero.y].state = TileState.PATH;
-                path.add(tiles[hero.x][hero.y]);
+            if (tiles[oldX][oldY].state == TileState.EARTH) {
+                tiles[oldX][oldY].state = TileState.PATH;
+                path.add(tiles[oldX][oldY]);
             }
             hero.x = newX;
             hero.y = newY;
+
+            fireChange(getTile(oldX, oldY));
+            fireChange(getTile(newX, newY));
+
             if (tiles[newX][newY].state == TileState.WATER && !path.isEmpty()) {
                 cut();
             }
         }
+    }
+
+    /**
+     * @return tile of hero along with it's current position
+     */
+    public Tile getHero() {
+        return hero;
+    }
+
+    /**
+     * Notify all field change listeners about some changes in specified tile
+     *
+     * @param tile
+     */
+    private void fireChange(Tile tile) {
+        fireChange(new FieldChangeEvent(tile.x, tile.y, 1, 1));
+    }
+
+    /**
+     * Notify all field change listeners with specified field change event
+     *
+     * @param e
+     */
+    private void fireChange(FieldChangeEvent e) {
+        if (changeListeners == null) {
+            return;
+        }
+
+        for (int i = changeListeners.size() - 1; i >= 0; i--) {
+            changeListeners.get(i).fieldChanged(e);
+        }
+    }
+
+    /**
+     * Register specified field change listener to listen events from this field object
+     *
+     * @param l
+     */
+    public void addChangeListener(FieldChangeListener l) {
+        if (changeListeners == null) {
+            changeListeners = new ArrayList<FieldChangeListener>();
+        }
+
+        changeListeners.add(l);
+    }
+
+    /**
+     * Un-register specified field change listener
+     *
+     * @param l
+     */
+    public void removeChangeListener(FieldChangeListener l) {
+        if (changeListeners == null) {
+            return;
+        }
+
+        changeListeners.remove(l);
     }
 }
