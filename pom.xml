@@ -6,6 +6,11 @@
     <version>0.0.1</version>
     <packaging>jar</packaging>
 
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
+    </build>
+
     <dependencies>
 
         <dependency>
