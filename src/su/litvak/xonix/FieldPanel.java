@@ -20,6 +20,9 @@ public class FieldPanel extends JPanel implements FieldChangeListener {
 
     public FieldPanel() {
         this.controller = new Controller();
+
+        setLayout(new GridBagLayout());
+        setBackground(Color.BLUE);
         /**
          * Set up hero movement actions
          */
@@ -45,6 +48,8 @@ public class FieldPanel extends JPanel implements FieldChangeListener {
                 JLabel l = new JLabel();
                 labels[i][j] = l;
                 l.setPreferredSize(TILE_SIZE);
+                l.setMinimumSize(TILE_SIZE);
+                l.setMaximumSize(TILE_SIZE);
                 l.setOpaque(true);
                 add(l, new GridBagConstraints(i, j, 1, 1, 0.0, 0.0,
                         GridBagConstraints.CENTER, GridBagConstraints.BOTH, TILE_INSETS, 0, 0));
