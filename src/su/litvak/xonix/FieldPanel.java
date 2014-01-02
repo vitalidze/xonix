@@ -3,13 +3,6 @@ package su.litvak.xonix;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Vitaly
- * Date: 16.08.13
- * Time: 1:05
- * To change this template use File | Settings | File Templates.
- */
 public class FieldPanel extends JPanel implements FieldChangeListener {
     final static Dimension TILE_SIZE = new Dimension(25, 25);
     final static Insets TILE_INSETS = new Insets(1, 1, 1, 1);

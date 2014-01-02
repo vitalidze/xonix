@@ -2,13 +2,6 @@ package su.litvak.xonix;
 
 import java.awt.*;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Vitaly
- * Date: 16.08.13
- * Time: 0:26
- * To change this template use File | Settings | File Templates.
- */
 public enum TileState {
     EARTH('+', Color.YELLOW),
     WATER('O', Color.BLUE),

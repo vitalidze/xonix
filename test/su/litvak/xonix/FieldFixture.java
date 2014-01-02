@@ -8,13 +8,6 @@ import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Vitaly
- * Date: 03.08.13
- * Time: 1:25
- * To change this template use File | Settings | File Templates.
- */
 public class FieldFixture {
     final int width;
     final int height;

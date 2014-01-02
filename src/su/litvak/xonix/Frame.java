@@ -9,13 +9,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Vitaly
- * Date: 10.08.13
- * Time: 0:09
- * To change this template use File | Settings | File Templates.
- */
 public class Frame extends JFrame {
     JPanel jpMain = new JPanel();
 

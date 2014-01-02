@@ -4,13 +4,6 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Vitaly
- * Date: 16.08.13
- * Time: 0:59
- * To change this template use File | Settings | File Templates.
- */
 public class Controller {
     private Field field;
 
