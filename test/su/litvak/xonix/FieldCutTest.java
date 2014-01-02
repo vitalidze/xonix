@@ -111,4 +111,19 @@ public class FieldCutTest {
             .waterPoints(3, 1)
         .check();
     }
+
+    @Test
+    public void testMultipleAreas() {
+        new FieldFixture(5, 5)
+            .path(1, 1,
+                  1, 2,
+                  2, 2,
+                  3, 2,
+                  3, 1,
+                  4, 1,
+                  4, 2,
+                  5, 2)
+            .waterRect(1, 1, 5, 2)
+        .check();
+    }
 }

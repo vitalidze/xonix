@@ -68,7 +68,7 @@ public class Field {
         Set<Tile> borderSet = new HashSet<Tile>(border);
         Set<Tile> usedPoints = new HashSet<Tile>(borderSet);
         List<Set<Tile>> areas = new ArrayList<Set<Tile>>();
-        Set<Tile> smallest = null;
+        int biggestAreaIndex = -1;
 
         /**
          * Walk through border, find opposite points
@@ -88,16 +88,19 @@ public class Field {
                     areas.add(area);
                     usedPoints.addAll(area);
 
-                    if (smallest == null || smallest.size() > area.size()) {
-                        smallest = area;
+                    if (biggestAreaIndex < 0 || areas.get(biggestAreaIndex).size() < area.size()) {
+                        biggestAreaIndex = areas.size() - 1;
                     }
                 }
             }
         }
 
         Set<Tile> toFill = new HashSet<Tile>(borderSet);
-        if (areas.size() > 1 && smallest != null) {
-            toFill.addAll(smallest);
+        if (!areas.isEmpty()) {
+            areas.remove(biggestAreaIndex);
+            for (Set<Tile> area : areas) {
+                toFill.addAll(area);
+            }
         }
 
         for (Tile tile : toFill) {
