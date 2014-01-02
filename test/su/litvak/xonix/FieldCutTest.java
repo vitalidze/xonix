@@ -1,21 +1,8 @@
 package su.litvak.xonix;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.*;
-import java.util.HashSet;
-import java.util.Set;
-
-/**
- * Created with IntelliJ IDEA.
- * User: Vitaly
- * Date: 03.08.13
- * Time: 1:18
- * To change this template use File | Settings | File Templates.
- */
 public class FieldCutTest {
-    // TODO write Emily diagonal test case (left-up-left-up)
     @Test
     public void testVerticalCut1() {
         new FieldFixture(5, 5)
@@ -110,6 +97,18 @@ public class FieldCutTest {
                   2, 2,
                   2, 1)
             .waterRect(1, 1, 2, 2)
+        .check();
+    }
+
+    @Test
+    public void testDiagonalCut() {
+        new FieldFixture(3, 3)
+            .path(1, 1,
+                  2, 1,
+                  2, 2,
+                  3, 2,
+                  3, 3)
+            .waterPoints(3, 1)
         .check();
     }
 }

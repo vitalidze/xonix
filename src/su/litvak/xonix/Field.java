@@ -73,8 +73,9 @@ public class Field {
     public void cut() {
         List<Tile> border = getPath();
         Set<Tile> borderSet = new HashSet<Tile>(border);
-        Set<Tile> part1 = new HashSet<Tile>();
-        Set<Tile> part2 = new HashSet<Tile>();
+        Set<Tile> usedPoints = new HashSet<Tile>(borderSet);
+        List<Set<Tile>> areas = new ArrayList<Set<Tile>>();
+        Set<Tile> smallest = null;
 
         /**
          * Walk through border, find opposite points
@@ -87,28 +88,24 @@ public class Field {
              * Movement was vertical, check left and right parts,
              * check top and bottom parts in any other case
              */
-            if (borderSet.contains(getTile(x, y - 1)) ||
-                borderSet.contains(getTile(x, y + 1))) {
-                fill(getTile(x - 1, y), borderSet, part1);
-                fill(getTile(x + 1, y), borderSet, part2);
-            } else {
-                fill(getTile(x, y - 1), borderSet, part1);
-                fill(getTile(x, y + 1), borderSet, part2);
-            }
+            for (int[] dxdy : new int[][]{{-1, 0}, {1, 0}, {0, -1}, {0, 1} }) {
+                Set<Tile> area = new HashSet<Tile>();
+                fill(getTile(x + dxdy[0], y + dxdy[1]), usedPoints, area);
+                if (!area.isEmpty()) {
+                    areas.add(area);
+                    usedPoints.addAll(area);
 
-            /**
-             * Try to find non-empty areas
-             */
-            if (!part1.isEmpty() && !part2.isEmpty()) {
-                break;
-            } else {
-                part1.clear();
-                part2.clear();
+                    if (smallest == null || smallest.size() > area.size()) {
+                        smallest = area;
+                    }
+                }
             }
         }
 
-        Set<Tile> toFill = part1.size() > part2.size() ? part2 : part1;
-        toFill.addAll(borderSet);
+        Set<Tile> toFill = new HashSet<Tile>(borderSet);
+        if (areas.size() > 1 && smallest != null) {
+            toFill.addAll(smallest);
+        }
 
         for (Tile tile : toFill) {
             tile.state = TileState.WATER;
@@ -122,16 +119,16 @@ public class Field {
      * Recursively fills area below the border starting from specified point
      *
      * @param point     potential point to fill
-     * @param border    set of points representing shape border
      * @param filled    set of points already filled
+     * @param result    resulting set
      */
-    private void fill(Tile point, Set<Tile> border, Set<Tile> filled) {
-        if (point != null && point.state == TileState.EARTH && !filled.contains(point) && !border.contains(point)) {
-            filled.add(point);
-            fill(getTile(point.x - 1, point.y), border, filled);
-            fill(getTile(point.x + 1, point.y), border, filled);
-            fill(getTile(point.x, point.y - 1), border, filled);
-            fill(getTile(point.x, point.y + 1), border, filled);
+    private void fill(Tile point, Set<Tile> filled, Set<Tile> result) {
+        if (point != null && point.state == TileState.EARTH && !filled.contains(point) && !result.contains(point)) {
+            result.add(point);
+            fill(getTile(point.x - 1, point.y), filled, result);
+            fill(getTile(point.x + 1, point.y), filled, result);
+            fill(getTile(point.x, point.y - 1), filled, result);
+            fill(getTile(point.x, point.y + 1), filled, result);
         }
     }
 
