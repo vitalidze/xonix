@@ -50,6 +50,12 @@ public class FieldPanel extends JPanel implements FieldChangeListener {
         }
 
         fieldChanged(new FieldChangeEvent(0, 0, field.getCols(), field.getRows()));
+
+        /**
+         * Start enemies
+         */
+        controller.stopEnemies();
+        controller.startEnemies();
     }
 
     /**
@@ -61,13 +67,9 @@ public class FieldPanel extends JPanel implements FieldChangeListener {
     public void fieldChanged(FieldChangeEvent e) {
         for (int i = e.x; i < e.x + e.width; i++) {
             for (int j = e.y; j < e.y + e.height; j++) {
-                Tile t = field.getTile(i, j);
+                TileState t = field.getTile(i, j);
                 JLabel l = labels[i][j];
-                if (field.getHero().x == i && field.getHero().y == j) {
-                    l.setBackground(field.getHero().state.color);
-                } else {
-                    l.setBackground(t.state.color);
-                }
+                l.setBackground(t.color);;
             }
         }
     }

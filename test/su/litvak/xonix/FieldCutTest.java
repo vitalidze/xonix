@@ -11,7 +11,10 @@ public class FieldCutTest {
                   2, 3,
                   2, 4,
                   2, 5)
-            .waterRect(1, 1, 1, 5)
+            .waterRect(1, 0, 6, 1)
+            .waterRect(0, 1, 1, 6)
+            .waterRect(2, 1, 5, 5)
+            .waterRect(1, 6, 6, 1)
         .check();
     }
 
