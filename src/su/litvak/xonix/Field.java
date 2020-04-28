@@ -1,49 +1,48 @@
 package su.litvak.xonix;
 
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.List;
+import java.util.*;
 
 public class Field {
-    private Tile[][] tiles;
+    private final Tile[][] tiles;
+    private final int width;
+    private final int height;
+
     private List<Tile> path;
     private Tile hero;
+    private List<Tile> enemies;
     private List<FieldChangeListener> changeListeners;
 
+
     /**
-     * @param width     width of earth part of the battlefield
-     * @param height    height of earth part of the battlefield
+     * @param earthWidth     width of earth part of the battlefield
+     * @param earthHeight    height of earth part of the battlefield
      */
-    public Field(int width, int height) {
-        tiles = new Tile[width + 2][height + 2];
+    public Field(int earthWidth, int earthHeight) {
+        this.width = earthWidth + 2;
+        this.height = earthHeight + 2;
+        this.tiles = new Tile[width][height];
 
-        width = tiles.length;
-        height = tiles[0].length;
-
-        /**
-         * Fill earth and water
-         */
+        // Fill earth and water
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 TileState tileState =
-                        ((x == 0 || x == width - 1) && y >= 0) ||
-                        ((y == 0 || y == height - 1) && x >= 0) ? TileState.WATER : TileState.EARTH;
+                        ((x == 0 || x == width - 1)) ||
+                        ((y == 0 || y == height - 1)) ? TileState.WATER : TileState.EARTH;
 
                 tiles[x][y] = new Tile(x, y, tileState);
             }
         }
 
-        /**
-         * Put hero to the upper left corner
-         */
+        // Put hero to the upper left corner
         hero = new Tile(0, 0, TileState.HERO);
 
-        /**
-         * Initialize path
-         */
-        path = new ArrayList<Tile>();
+        // Initialize path
+        path = new ArrayList<>();
+
+        // Set up enemies
+        enemies = Collections.singletonList(tiles[1][height - 2]);
+        enemies.forEach(e -> e.state = TileState.ENEMY);
     }
 
     @Override

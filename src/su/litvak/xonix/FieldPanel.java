@@ -63,11 +63,7 @@ public class FieldPanel extends JPanel implements FieldChangeListener {
             for (int j = e.y; j < e.y + e.height; j++) {
                 Tile t = field.getTile(i, j);
                 JLabel l = labels[i][j];
-                if (field.getHero().x == i && field.getHero().y == j) {
-                    l.setBackground(field.getHero().state.color);
-                } else {
-                    l.setBackground(t.state.color);
-                }
+                l.setBackground(t.state.color);
             }
         }
     }

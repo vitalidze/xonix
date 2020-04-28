@@ -12,7 +12,7 @@ public enum TileState {
     final char symbol;
     final Color color;
 
-    private TileState(char symbol, Color color) {
+    TileState(char symbol, Color color) {
         this.symbol = symbol;
         this.color = color;
     }
