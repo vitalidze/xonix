@@ -3,20 +3,22 @@ package su.litvak.xonix;
 import org.junit.Assert;
 
 import java.awt.Point;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 public class FieldFixture {
     final int width;
     final int height;
     List<Point> heroPath = new ArrayList<Point>();
     Set<Point> expectedWater = new HashSet<Point>();
+    Point hero;
+    List<Point> enemies;
 
     FieldFixture(int width, int height) {
         this.width = width;
         this.height = height;
+
+        hero = new Point(0, 0);
+        enemies = Collections.singletonList(new Point(1, height - 2));
     }
 
     FieldFixture path(int... points) {
@@ -58,14 +60,18 @@ public class FieldFixture {
         Field actual = new Field(width, height);
         List<Tile> pathTiles = new ArrayList<Tile>(heroPath.size());
         for (Point p : heroPath) {
-            pathTiles.add(actual.getTile(p.x, p.y));
+            Tile tile = actual.getTile(p.x, p.y);
+            tile.state = TileState.PATH;
+            pathTiles.add(tile);
         }
         actual.setPath(pathTiles);
         actual.cut();
 
         Field expected = new Field(width, height);
         for (Point p : heroPath) {
-            expected.getTile(p.x, p.y).state = TileState.WATER;
+            if (expected.getTile(p.x, p.y).state != TileState.ENEMY) {
+                expected.getTile(p.x, p.y).state = TileState.WATER;
+            }
         }
         for (Point p : expectedWater) {
             expected.getTile(p.x, p.y).state = TileState.WATER;

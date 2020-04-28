@@ -5,6 +5,7 @@ import java.awt.*;
 public enum TileState {
     EARTH('+', Color.YELLOW),
     WATER('O', Color.BLUE),
+    DEEP_WATER('D', Color.BLUE.darker()),
     HERO('H', Color.GREEN),
     ENEMY('E', Color.RED),
     PATH('x', Color.BLACK);

@@ -11,7 +11,7 @@ public class FieldCutTest {
                   2, 3,
                   2, 4,
                   2, 5)
-            .waterRect(1, 1, 1, 5)
+            .waterRect(3, 1, 3, 5)
         .check();
     }
 
@@ -47,7 +47,7 @@ public class FieldCutTest {
                   3, 4,
                   4, 4,
                   5, 4)
-            .waterRect(1, 5, 5, 1)
+            .waterRect(1, 1, 5, 3)
         .check();
     }
 
@@ -70,12 +70,10 @@ public class FieldCutTest {
                   2, 3,
                   3, 4,
                   4, 5)
-            .waterPoints(1, 3,
-                         1, 4,
-                         1, 5,
-                         2, 4,
-                         2, 5,
-                         3, 5)
+                .waterRect(1, 1, 5, 2)
+                .waterRect(2, 3, 4, 1)
+                .waterRect(3, 4, 3, 1)
+                .waterRect(4, 5, 2, 1)
         .check();
     }
 
@@ -90,8 +88,7 @@ public class FieldCutTest {
     @Test
     public void testZeroStartNonZeroEnd() {
         new FieldFixture(5, 5)
-            .path(1, 5,
-                  1, 4,
+            .path(1, 4,
                   1, 3,
                   2, 3,
                   2, 2,

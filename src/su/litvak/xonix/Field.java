@@ -41,8 +41,7 @@ public class Field {
         path = new ArrayList<>();
 
         // Set up enemies
-        enemies = Collections.singletonList(tiles[1][height - 2]);
-        enemies.forEach(e -> e.state = TileState.ENEMY);
+        enemies = Collections.singletonList(new Tile(1, height - 2, TileState.ENEMY));
     }
 
     @Override
@@ -51,7 +50,7 @@ public class Field {
 
         for (int y = 0; y < getRows(); y++) {
             for (int x = 0; x < getCols(); x++) {
-                result += tiles[x][y].state.symbol + " ";
+                result += getTile(x, y).state.symbol + " ";
             }
             result += "\r\n";
         }
@@ -63,67 +62,46 @@ public class Field {
      * Cuts off area, which is smaller of the two parts divided by specified border
      */
     public void cut() {
-        List<Tile> border = getPath();
-        Set<Tile> borderSet = new HashSet<Tile>(border);
-        Set<Tile> usedPoints = new HashSet<Tile>(borderSet);
-        List<Set<Tile>> areas = new ArrayList<Set<Tile>>();
-        int biggestAreaIndex = -1;
-
-        /**
-         * Walk through border, find opposite points
-         */
-        for (Point point : border) {
-            final int x = point.x;
-            final int y = point.y;
-
-            /**
-             * Movement was vertical, check left and right parts,
-             * check top and bottom parts in any other case
-             */
-            for (int[] dxdy : new int[][]{{-1, 0}, {1, 0}, {0, -1}, {0, 1} }) {
-                Set<Tile> area = new HashSet<Tile>();
-                fill(getTile(x + dxdy[0], y + dxdy[1]), usedPoints, area);
-                if (!area.isEmpty()) {
-                    areas.add(area);
-                    usedPoints.addAll(area);
-
-                    if (biggestAreaIndex < 0 || areas.get(biggestAreaIndex).size() < area.size()) {
-                        biggestAreaIndex = areas.size() - 1;
-                    }
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Tile tile = getTileFromField(x, y);
+                if (tile.state == TileState.EARTH) {
+                    tile.state = TileState.DEEP_WATER;
                 }
             }
         }
 
-        Set<Tile> toFill = new HashSet<Tile>(borderSet);
-        if (!areas.isEmpty()) {
-            areas.remove(biggestAreaIndex);
-            for (Set<Tile> area : areas) {
-                toFill.addAll(area);
-            }
-        }
+        enemies.forEach(this::floodFill);
 
-        for (Tile tile : toFill) {
-            tile.state = TileState.WATER;
-            fireChange(tile);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Tile tile = getTileFromField(x, y);
+                if (tile.state == TileState.DEEP_WATER || tile.state == TileState.PATH) {
+                    tile.state = TileState.WATER;
+                    fireChange(tile);
+                }
+            }
         }
 
         getPath().clear();
     }
 
     /**
-     * Recursively fills area below the border starting from specified point
-     *
-     * @param point     potential point to fill
-     * @param filled    set of points already filled
-     * @param result    resulting set
+     * Recursively fills area with earth surrounding the specified enemy location
      */
-    private void fill(Tile point, Set<Tile> filled, Set<Tile> result) {
-        if (point != null && point.state == TileState.EARTH && !filled.contains(point) && !result.contains(point)) {
-            result.add(point);
-            fill(getTile(point.x - 1, point.y), filled, result);
-            fill(getTile(point.x + 1, point.y), filled, result);
-            fill(getTile(point.x, point.y - 1), filled, result);
-            fill(getTile(point.x, point.y + 1), filled, result);
+    private void floodFill(Tile enemy) {
+        Queue<Tile> queue = new LinkedList<>();
+        queue.add(getTileFromField(enemy));
+        Tile next;
+        while (!queue.isEmpty()) {
+            next = queue.remove();
+            if (next != null && next.state == TileState.DEEP_WATER) {
+                next.state = TileState.EARTH;
+                queue.add(getTileFromField(next.x - 1, next.y));
+                queue.add(getTileFromField(next.x + 1, next.y));
+                queue.add(getTileFromField(next.x, next.y + 1));
+                queue.add(getTileFromField(next.x, next.y - 1));
+            }
         }
     }
 
@@ -141,6 +119,15 @@ public class Field {
         return tiles[0].length;
     }
 
+    private Tile getTileFromField(Point p) {
+        return getTileFromField(p.x, p.y);
+    }
+
+    private Tile getTileFromField(int x, int y) {
+        return x >= 0 && x < getCols() &&
+               y >= 0 && y < getRows() ? tiles[x][y] : null;
+    }
+
     /**
      * <p>Looks for existing tile in a field. Will return null if coordinates are invalid.</p>
      *
@@ -151,8 +138,13 @@ public class Field {
      * @return  field tile, null if coordinates point out of field bounds
      */
     public Tile getTile(int x, int y) {
-        return x >= 0 && x < getCols() &&
-               y >= 0 && y < getRows() ? tiles[x][y] : null;
+        if (hero.x == x && hero.y == y) {
+            return hero;
+        } else {
+            return enemies.stream().filter(e -> e.x == x && e.y == y)
+                    .findFirst()
+                    .orElseGet(() -> getTileFromField(x, y));
+        }
     }
 
     /**
@@ -240,7 +232,7 @@ public class Field {
      */
     public void addChangeListener(FieldChangeListener l) {
         if (changeListeners == null) {
-            changeListeners = new ArrayList<FieldChangeListener>();
+            changeListeners = new ArrayList<>();
         }
 
         changeListeners.add(l);
