@@ -11,16 +11,12 @@ import java.util.ArrayList;
 public class FieldFixture {
     final int width;
     final int height;
-    List<Point> heroPath = new ArrayList<>();
-    Set<Point> expectedWater = new HashSet<>();
-    Point hero;
-    Point enemy;
+    List<Point> heroPath = new ArrayList<Point>();
+    Set<Point> expectedWater = new HashSet<Point>();
 
     FieldFixture(int width, int height) {
         this.width = width;
         this.height = height;
-        hero = new Point(0, 0 );
-        enemy = new Point(1, height);
     }
 
     FieldFixture path(int... points) {
@@ -58,63 +54,29 @@ public class FieldFixture {
         return result;
     }
 
-    TileState[][] getActualState(Field field) {
-        TileState[][] actual = new TileState[field.getRows()][field.getCols()];
-        for (int x = 0; x < field.getCols(); x++) {
-            for (int y = 0; y < field.getRows(); y++) {
-                actual[y][x] = field.getTile(x, y);
-            }
-        }
-        return actual;
-    }
-
     public void check() {
-        Field field = new Field(width, height);
-        System.out.println(toString(getActualState(field)));
-        field.setPath(heroPath);
-        System.out.println(toString(getActualState(field)));
-        field.cut();
-        System.out.println(toString(getActualState(field)));
-
-        TileState[][] actual = getActualState(field);
-
-        TileState[][] expected = new TileState[field.getRows()][field.getCols()];
-        for (int x = 0; x < field.getCols(); x++) {
-            for (int y = 0; y < field.getRows(); y++) {
-                expected[y][x] = TileState.EARTH;
-            }
-        }
-
+        Field actual = new Field(width, height);
+        List<Tile> pathTiles = new ArrayList<Tile>(heroPath.size());
         for (Point p : heroPath) {
-            expected[p.y][p.x] = TileState.WATER;
+            pathTiles.add(actual.getTile(p.x, p.y));
         }
+        actual.setPath(pathTiles);
+        actual.cut();
 
+        Field expected = new Field(width, height);
+        for (Point p : heroPath) {
+            expected.getTile(p.x, p.y).state = TileState.WATER;
+        }
         for (Point p : expectedWater) {
-            expected[p.y][p.x] = TileState.WATER;
+            expected.getTile(p.x, p.y).state = TileState.WATER;
         }
 
-        expected[hero.y][hero.x] = TileState.HERO;
-        expected[enemy.y][enemy.x] = TileState.ENEMY;
+        String message = "Field mismatch. Expected: \n\n" + expected + " \nBut was: \n\n" + actual;
 
-        String message = "Field mismatch. Expected: \n\n" + toString(expected) + " \nBut was: \n\n" + toString(actual);
-
-        for (int x = 0; x < field.getCols(); x++) {
-            for (int y = 0; y < field.getRows(); y++) {
-                Assert.assertTrue(message, expected[y][x] == actual[y][x]);
+        for (int x = 0; x < width + 2; x++) {
+            for (int y = 0; y < height + 2; y++) {
+                Assert.assertTrue(message, expected.getTile(x, y).state == actual.getTile(x, y).state);
             }
         }
-    }
-
-    String toString(TileState[][] states) {
-        StringBuilder result = new StringBuilder();
-
-        for (int x = 0; x < states.length; x++) {
-            for (int y = 0; y < states[0].length; y++) {
-                result.append(states[x][y].symbol).append(" ");
-            }
-            result.append("\r\n");
-        }
-
-        return result.toString();
     }
 }

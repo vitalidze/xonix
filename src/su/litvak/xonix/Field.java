@@ -1,59 +1,49 @@
 package su.litvak.xonix;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.util.*;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
-import java.util.stream.*;
 
 public class Field {
-    private TilePolygon earth;
-    private List<Point> path;
-    private Point hero;
+    private Tile[][] tiles;
+    private List<Tile> path;
+    private Tile hero;
     private List<FieldChangeListener> changeListeners;
-    private List<Point> enemies;
-    private final int width;
-    private final int height;
 
     /**
-     * Creates field without enemies
-     *
      * @param width     width of earth part of the battlefield
      * @param height    height of earth part of the battlefield
      */
     public Field(int width, int height) {
-        this(width, height, 0);
-    }
+        tiles = new Tile[width + 2][height + 2];
 
-    /**
-     * @param width     width of earth part of the battlefield
-     * @param height    height of earth part of the battlefield
-     * @param numberOfEnemies   how many enemies to be added to the field
-     */
-    public Field(int width, int height, int numberOfEnemies) {
-        this.width = width;
-        this.height = height;
+        width = tiles.length;
+        height = tiles[0].length;
 
-        earth = new TilePolygon();
-        earth.addPoint(1, 1);
-        earth.addPoint(width , 1);
-        earth.addPoint(width, height);
-        earth.addPoint(1, height);
+        /**
+         * Fill earth and water
+         */
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                TileState tileState =
+                        ((x == 0 || x == width - 1) && y >= 0) ||
+                        ((y == 0 || y == height - 1) && x >= 0) ? TileState.WATER : TileState.EARTH;
+
+                tiles[x][y] = new Tile(x, y, tileState);
+            }
+        }
 
         /**
          * Put hero to the upper left corner
          */
-        hero = new Point(0, 0);
+        hero = new Tile(0, 0, TileState.HERO);
 
         /**
          * Initialize path
          */
-        path = new ArrayList<>();
-
-        /**
-         * Initialize enemies
-         */
-        enemies = Collections.singletonList(new Point(1, height));
+        path = new ArrayList<Tile>();
     }
 
     @Override
@@ -62,7 +52,7 @@ public class Field {
 
         for (int y = 0; y < getRows(); y++) {
             for (int x = 0; x < getCols(); x++) {
-                result += getTile(x, y).symbol + " ";
+                result += tiles[x][y].state.symbol + " ";
             }
             result += "\r\n";
         }
@@ -74,40 +64,48 @@ public class Field {
      * Cuts off area, which is smaller of the two parts divided by specified border
      */
     public void cut() {
-        TilePolygon halfToCut = new TilePolygon();
-        TilePolygon newEarth = new TilePolygon();
-        path.forEach(p -> halfToCut.addPoint(p.x, p.y));
+        List<Tile> border = getPath();
+        Set<Tile> borderSet = new HashSet<Tile>(border);
+        Set<Tile> usedPoints = new HashSet<Tile>(borderSet);
+        List<Set<Tile>> areas = new ArrayList<Set<Tile>>();
+        int biggestAreaIndex = -1;
 
-        earth.getPoints()
-                .forEach(p -> {
-                    int x = p.x;
-                    int y = p.y;
-                    TilePolygon testHalf = new TilePolygon(halfToCut);
-                    testHalf.addPoint(x, y);
-                    if (enemies.stream().noneMatch(e -> testHalf.contains(e.x, e.y))) {
-                        halfToCut.addPoint(x, y);
-                    } else {
-                        newEarth.addPoint(x, y);
+        /**
+         * Walk through border, find opposite points
+         */
+        for (Point point : border) {
+            final int x = point.x;
+            final int y = point.y;
+
+            /**
+             * Movement was vertical, check left and right parts,
+             * check top and bottom parts in any other case
+             */
+            for (int[] dxdy : new int[][]{{-1, 0}, {1, 0}, {0, -1}, {0, 1} }) {
+                Set<Tile> area = new HashSet<Tile>();
+                fill(getTile(x + dxdy[0], y + dxdy[1]), usedPoints, area);
+                if (!area.isEmpty()) {
+                    areas.add(area);
+                    usedPoints.addAll(area);
+
+                    if (biggestAreaIndex < 0 || areas.get(biggestAreaIndex).size() < area.size()) {
+                        biggestAreaIndex = areas.size() - 1;
                     }
-                });
-
-        path.forEach(p -> {
-            for (int[] d : new int[][] {{0, 1}, {1, 0}, {0, -1}, {-1, -1}}) {
-                int newX = p.x + d[0];
-                int newY = p.y + d[1];
-                if (earth.contains(p.x, p.y) && !halfToCut.contains(p.x, p.y)) {
-                    newEarth.addPoint(newX, newY);
                 }
             }
-        });
+        }
 
-        earth = newEarth;
-        for (int x = 0; x < getCols(); x++) {
-            for (int y = 0; y < getRows(); y++) {
-                if (halfToCut.contains(x, y)) {
-                    fireChange(new Point(x, y));
-                }
+        Set<Tile> toFill = new HashSet<Tile>(borderSet);
+        if (!areas.isEmpty()) {
+            areas.remove(biggestAreaIndex);
+            for (Set<Tile> area : areas) {
+                toFill.addAll(area);
             }
+        }
+
+        for (Tile tile : toFill) {
+            tile.state = TileState.WATER;
+            fireChange(tile);
         }
 
         getPath().clear();
@@ -123,10 +121,10 @@ public class Field {
     private void fill(Tile point, Set<Tile> filled, Set<Tile> result) {
         if (point != null && point.state == TileState.EARTH && !filled.contains(point) && !result.contains(point)) {
             result.add(point);
-//            fill(getTile(point.x - 1, point.y), filled, result);
-//            fill(getTile(point.x + 1, point.y), filled, result);
-//            fill(getTile(point.x, point.y - 1), filled, result);
-//            fill(getTile(point.x, point.y + 1), filled, result);
+            fill(getTile(point.x - 1, point.y), filled, result);
+            fill(getTile(point.x + 1, point.y), filled, result);
+            fill(getTile(point.x, point.y - 1), filled, result);
+            fill(getTile(point.x, point.y + 1), filled, result);
         }
     }
 
@@ -134,14 +132,14 @@ public class Field {
      * @return  total number of columns
      */
     public int getCols() {
-        return width + 2;
+        return tiles.length;
     }
 
     /**
      * @return  total number of rows
      */
     public int getRows() {
-        return height + 2;
+        return tiles[0].length;
     }
 
     /**
@@ -153,30 +151,15 @@ public class Field {
      * @param y y-coordinate of desired tile
      * @return  field tile, null if coordinates point out of field bounds
      */
-    public TileState getTile(int x, int y) {
-        if (hero.x == x && hero.y == y) {
-            return TileState.HERO;
-        }
-
-        if (enemies.stream().anyMatch(e -> e.x == x && e.y == y)) {
-            return TileState.ENEMY;
-        }
-
-        if (earth.contains(x, y)) {
-            if (path.stream().anyMatch(e -> e.x == x && e.y == y)) {
-                return TileState.PATH;
-            } else {
-                return TileState.EARTH;
-            }
-        }
-
-        return TileState.WATER;
+    public Tile getTile(int x, int y) {
+        return x >= 0 && x < getCols() &&
+               y >= 0 && y < getRows() ? tiles[x][y] : null;
     }
 
     /**
      * @return  current path of hero
      */
-    public List<Point> getPath() {
+    public List<Tile> getPath() {
         return path;
     }
 
@@ -186,7 +169,7 @@ public class Field {
      * @param path
      * @deprecated  to be used in tests only
      */
-    public void setPath(List<Point> path) {
+    public void setPath(List<Tile> path) {
         this.path = path;
     }
 
@@ -204,26 +187,26 @@ public class Field {
 
         if (newX >= 0 && newY >= 0 &&
             newX < getCols() && newY < getRows()) {
-            TileState newState = getTile(newX, newY);
-
+            if (tiles[oldX][oldY].state == TileState.EARTH) {
+                tiles[oldX][oldY].state = TileState.PATH;
+                path.add(tiles[oldX][oldY]);
+            }
             hero.x = newX;
             hero.y = newY;
 
-            if (newState == TileState.WATER && !path.isEmpty()) {
-                cut();
-            } else if (newState == TileState.EARTH) {
-                path.add(new Point(oldX, oldY));
-            }
+            fireChange(getTile(oldX, oldY));
+            fireChange(getTile(newX, newY));
 
-            fireChange(new Point(oldX, oldY));
-            fireChange(new Point(newX, newY));
+            if (tiles[newX][newY].state == TileState.WATER && !path.isEmpty()) {
+                cut();
+            }
         }
     }
 
     /**
      * @return tile of hero along with it's current position
      */
-    public Point getHero() {
+    public Tile getHero() {
         return hero;
     }
 
@@ -232,7 +215,7 @@ public class Field {
      *
      * @param tile
      */
-    private void fireChange(Point tile) {
+    private void fireChange(Tile tile) {
         fireChange(new FieldChangeEvent(tile.x, tile.y, 1, 1));
     }
 
@@ -275,23 +258,5 @@ public class Field {
         }
 
         changeListeners.remove(l);
-    }
-
-//    private void addEnemy() {
-//        for (int y = getRows() - 1; y >= 0; y--) {
-//            for (int x = 0; x < getCols(); x++) {
-//                Tile tile = getTile(x, y);
-//                if (tile.state == TileState.EARTH) {
-//                    tile.state = TileState.ENEMY;
-//                    enemies.add(tile);
-//                    fireChange(tile);
-//                    return;
-//                }
-//            }
-//        }
-//    }
-
-    public List<Point> getEnemies() {
-        return Collections.unmodifiableList(enemies);
     }
 }
