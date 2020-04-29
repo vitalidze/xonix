@@ -67,4 +67,10 @@ public class FieldPanel extends JPanel implements FieldChangeListener {
             }
         }
     }
+
+    @Override
+    public void fieldCut(FieldCutEvent e) {
+        revalidate();
+        repaint();
+    }
 }

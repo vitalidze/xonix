@@ -1,5 +1,6 @@
 package su.litvak.xonix;
 
 public interface FieldChangeListener {
-    public void fieldChanged(FieldChangeEvent e);
+    void fieldChanged(FieldChangeEvent e);
+    void fieldCut(FieldCutEvent e);
 }

@@ -2,6 +2,7 @@ package su.litvak.xonix;
 
 import java.awt.Point;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class Field {
     private final Tile[][] tiles;
@@ -84,6 +85,8 @@ public class Field {
         }
 
         getPath().clear();
+
+        fireCut();
     }
 
     /**
@@ -222,6 +225,16 @@ public class Field {
 
         for (int i = changeListeners.size() - 1; i >= 0; i--) {
             changeListeners.get(i).fieldChanged(e);
+        }
+    }
+
+    private void fireCut() {
+        if (changeListeners == null) {
+            return;
+        }
+
+        for (int i = changeListeners.size() - 1; i >= 0; i--) {
+            changeListeners.get(i).fieldCut(new FieldCutEvent());
         }
     }
 
