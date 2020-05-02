@@ -12,14 +12,16 @@ import java.util.Set;
 public class Frame extends JFrame {
     JPanel jpMain = new JPanel();
 
-    FieldPanel jpField = new FieldPanel();
-
-    JPanel jpToolbar = new JPanel();
-    JButton btnGoBottomTop = new JButton();
+    ToolbarPanel jpToolbar;
+    FieldPanel jpField;
 
     public Frame() {
         setTitle("Xonix");
         setResizable(false);
+
+        jpMain = new JPanel();
+        jpField = new FieldPanel();
+        jpToolbar = new ToolbarPanel(jpMain);
 
         /**
          * Initialize main panel
@@ -27,24 +29,6 @@ public class Frame extends JFrame {
         jpMain.setLayout(new BorderLayout());
         jpMain.add(jpToolbar, BorderLayout.PAGE_START);
         jpMain.add(jpField, BorderLayout.CENTER);
-
-        /**
-         * Initialize tool bar
-         */
-        jpToolbar.setLayout(new BorderLayout());
-        jpToolbar.add(btnGoBottomTop, BorderLayout.LINE_END);
-        btnGoBottomTop.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                boolean wasOnTop = isToolbarOnTop();
-                jpMain.remove(jpToolbar);
-                jpMain.add(jpToolbar, wasOnTop ? BorderLayout.PAGE_END : BorderLayout.PAGE_START);
-                jpMain.revalidate();
-
-                updateBottomTopButton();
-            }
-        });
-        updateBottomTopButton();
 
         /**
          * Put main panel to the content pane
@@ -56,23 +40,6 @@ public class Frame extends JFrame {
     }
 
     /**
-     * @return  true if toolbar is at the top of window, false if at the bottom
-     */
-    private boolean isToolbarOnTop() {
-        return jpToolbar.getParent() == null ||
-               ((BorderLayout) jpMain.getLayout()).getConstraints(jpToolbar).equals(BorderLayout.PAGE_START);
-    }
-
-    private void updateBottomTopButton() {
-        btnGoBottomTop.setToolTipText("Move tool bar to the " + (isToolbarOnTop() ? "bottom" : "top"));
-        btnGoBottomTop.setIcon(getImage("go-" + (isToolbarOnTop() ? "bottom" : "top") + ".png"));
-    }
-
-    private ImageIcon getImage(String fileName) {
-        return new ImageIcon(Thread.currentThread().getContextClassLoader().getResource("images/" + fileName));
-    }
-
-    /**
      * Initializes frame with specified field
      *
      * @param field
@@ -81,6 +48,7 @@ public class Frame extends JFrame {
         setTitle("Xonix " + (field.getCols() - 2) + "x" + (field.getRows() - 2));
 
         jpField.setField(field);
+        jpToolbar.setField(field);
 
         /**
          * Show frame in the middle

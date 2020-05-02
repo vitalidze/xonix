@@ -5,7 +5,7 @@ import java.awt.*;
 
 import org.slf4j.*;
 
-public class FieldPanel extends JPanel implements FieldChangeListener {
+public class FieldPanel extends JPanel implements FieldChangeListener, FieldCutListener {
     final static Dimension TILE_SIZE = new Dimension(25, 25);
     final static Insets TILE_INSETS = new Insets(1, 1, 1, 1);
 
@@ -28,12 +28,14 @@ public class FieldPanel extends JPanel implements FieldChangeListener {
         if (this.field != null) {
             removeAll();
             this.field.removeChangeListener(this);
+            this.field.removeCutListener(this);
         }
 
         heroController.setField(field);
         enemyController.setField(field);
         this.field = field;
         this.field.addChangeListener(this);
+        this.field.addCutListener(this);
 
         /**
          * Prepare tiles

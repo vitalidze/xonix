@@ -2,7 +2,6 @@ package su.litvak.xonix;
 
 import java.awt.Point;
 import java.util.*;
-import java.util.concurrent.*;
 
 public class Field {
     private final Tile[][] tiles;
@@ -13,7 +12,9 @@ public class Field {
     private Tile hero;
     private List<Tile> enemies;
     private List<FieldChangeListener> changeListeners;
-
+    private List<FieldCutListener> cutListeners;
+    private List<ScoreChangeListener> scoreChangeListeners;
+    private int score;
 
     /**
      * @param earthWidth     width of earth part of the battlefield
@@ -78,6 +79,9 @@ public class Field {
             for (int y = 0; y < height; y++) {
                 Tile tile = getTileFromField(x, y);
                 if (tile.state == TileState.DEEP_WATER || tile.state == TileState.PATH) {
+                    if (tile.state == TileState.DEEP_WATER) {
+                        score++;
+                    }
                     tile.state = TileState.WATER;
                     fireChange(tile);
                 }
@@ -87,6 +91,7 @@ public class Field {
         getPath().clear();
 
         fireCut();
+        fireScoreChanged();
     }
 
     /**
@@ -181,10 +186,17 @@ public class Field {
 
         if (newX >= 0 && newY >= 0 &&
             newX < getCols() && newY < getRows()) {
-            if (tiles[oldX][oldY].state == TileState.EARTH) {
-                tiles[oldX][oldY].state = TileState.PATH;
-                path.add(tiles[oldX][oldY]);
+            Tile oldTile = getTileFromField(oldX, oldY);
+            if (oldTile.state == TileState.EARTH) {
+                oldTile.state = TileState.PATH;
+                path.add(oldTile);
             }
+            Tile newTile = getTileFromField(newX, newY);
+            if (newTile.state == TileState.EARTH) {
+                score++;
+                fireScoreChanged();
+            }
+
             hero.x = newX;
             hero.y = newY;
 
@@ -249,22 +261,10 @@ public class Field {
      * @param e
      */
     private void fireChange(FieldChangeEvent e) {
-        if (changeListeners == null) {
-            return;
-        }
-
-        for (int i = changeListeners.size() - 1; i >= 0; i--) {
-            changeListeners.get(i).fieldChanged(e);
-        }
-    }
-
-    private void fireCut() {
-        if (changeListeners == null) {
-            return;
-        }
-
-        for (int i = changeListeners.size() - 1; i >= 0; i--) {
-            changeListeners.get(i).fieldCut(new FieldCutEvent());
+        if (changeListeners != null) {
+            for (int i = changeListeners.size() - 1; i >= 0; i--) {
+                changeListeners.get(i).fieldChanged(e);
+            }
         }
     }
 
@@ -287,10 +287,44 @@ public class Field {
      * @param l
      */
     public void removeChangeListener(FieldChangeListener l) {
-        if (changeListeners == null) {
-            return;
-        }
+        Optional.ofNullable(changeListeners).ifPresent(lst -> lst.remove(l));
+    }
 
-        changeListeners.remove(l);
+    private void fireCut() {
+        if (cutListeners != null) {
+            for (int i = cutListeners.size() - 1; i >= 0; i--) {
+                cutListeners.get(i).fieldCut(new FieldCutEvent());
+            }
+        }
+    }
+
+    public void addCutListener(FieldCutListener l) {
+        if (cutListeners == null) {
+            cutListeners = new ArrayList<>();
+        }
+        cutListeners.add(l);
+    }
+
+    public void removeCutListener(FieldCutListener l) {
+        Optional.ofNullable(cutListeners).ifPresent(lst -> lst.remove(l));
+    }
+
+    private void fireScoreChanged() {
+        if (scoreChangeListeners != null) {
+            for (int i = scoreChangeListeners.size() - 1; i >= 0; i--) {
+                scoreChangeListeners.get(i).scoreChanged(new ScoreChangeEvent(score));
+            }
+        }
+    }
+
+    public void addScoreChangeListener(ScoreChangeListener l) {
+        if (scoreChangeListeners == null) {
+            scoreChangeListeners = new ArrayList<>();
+        }
+        scoreChangeListeners.add(l);
+    }
+
+    public void removeScoreChangeListener(ScoreChangeListener l) {
+        Optional.ofNullable(scoreChangeListeners).ifPresent(lst -> lst.remove(l));
     }
 }
