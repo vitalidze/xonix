@@ -12,7 +12,7 @@ public class FieldCutTest {
                   2, 4,
                   2, 5)
             .waterRect(3, 1, 3, 5)
-        .check();
+            .check();
     }
 
     @Test
@@ -24,7 +24,7 @@ public class FieldCutTest {
                   4, 4,
                   4, 5)
             .waterRect(5, 1, 1, 5)
-        .check();
+            .check();
     }
 
     @Test
@@ -36,7 +36,7 @@ public class FieldCutTest {
                   4, 2,
                   5, 2)
             .waterRect(1, 1, 5, 1)
-        .check();
+            .check();
     }
 
     @Test
@@ -48,7 +48,7 @@ public class FieldCutTest {
                   4, 4,
                   5, 4)
             .waterRect(1, 1, 5, 3)
-        .check();
+            .check();
     }
 
     @Test
@@ -60,7 +60,7 @@ public class FieldCutTest {
             .waterPoints(4, 1,
                          5, 1,
                          5, 2)
-        .check();
+            .check();
     }
 
     @Test
@@ -74,7 +74,7 @@ public class FieldCutTest {
                 .waterRect(2, 3, 4, 1)
                 .waterRect(3, 4, 3, 1)
                 .waterRect(4, 5, 2, 1)
-        .check();
+            .check();
     }
 
     @Test
@@ -94,7 +94,7 @@ public class FieldCutTest {
                   2, 2,
                   2, 1)
             .waterRect(1, 1, 2, 2)
-        .check();
+            .check();
     }
 
     @Test
@@ -106,7 +106,7 @@ public class FieldCutTest {
                   3, 2,
                   3, 3)
             .waterPoints(3, 1)
-        .check();
+            .check();
     }
 
     @Test
@@ -121,6 +121,6 @@ public class FieldCutTest {
                   4, 2,
                   5, 2)
             .waterRect(1, 1, 5, 2)
-        .check();
+            .check();
     }
 }

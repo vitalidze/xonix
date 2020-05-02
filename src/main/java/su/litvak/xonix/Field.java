@@ -1,7 +1,12 @@
 package su.litvak.xonix;
 
 import java.awt.Point;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Queue;
 
 public class Field {
     private final Tile[][] tiles;
@@ -17,6 +22,8 @@ public class Field {
     private int score;
 
     /**
+     * Create new instance of field data model.
+     *
      * @param earthWidth     width of earth part of the battlefield
      * @param earthHeight    height of earth part of the battlefield
      */
@@ -29,8 +36,8 @@ public class Field {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 TileState tileState =
-                        ((x == 0 || x == width - 1)) ||
-                        ((y == 0 || y == height - 1)) ? TileState.WATER : TileState.EARTH;
+                        ((x == 0 || x == width - 1))
+                            || ((y == 0 || y == height - 1)) ? TileState.WATER : TileState.EARTH;
 
                 tiles[x][y] = new Tile(x, y, tileState);
             }
@@ -61,7 +68,7 @@ public class Field {
     }
 
     /**
-     * Cuts off area, which is smaller of the two parts divided by specified border
+     * Cuts off area, which is smaller of the two parts divided by specified border.
      */
     public void cut() {
         for (int x = 0; x < width; x++) {
@@ -95,7 +102,7 @@ public class Field {
     }
 
     /**
-     * Recursively fills area with earth surrounding the specified enemy location
+     * Recursively fills area with earth surrounding the specified enemy location.
      */
     private void floodFill(Tile enemy) {
         Queue<Tile> queue = new LinkedList<>();
@@ -114,6 +121,8 @@ public class Field {
     }
 
     /**
+     * Used to find the total number of columns on the field.
+     *
      * @return  total number of columns
      */
     public int getCols() {
@@ -121,6 +130,8 @@ public class Field {
     }
 
     /**
+     * Used to find the total number of rows on the field.
+     *
      * @return  total number of rows
      */
     public int getRows() {
@@ -132,8 +143,8 @@ public class Field {
     }
 
     private Tile getTileFromField(int x, int y) {
-        return x >= 0 && x < getCols() &&
-               y >= 0 && y < getRows() ? tiles[x][y] : null;
+        return x >= 0 && x < getCols()
+               && y >= 0 && y < getRows() ? tiles[x][y] : null;
     }
 
     /**
@@ -156,6 +167,8 @@ public class Field {
     }
 
     /**
+     * Used to get the current path of hero.
+     *
      * @return  current path of hero
      */
     public List<Tile> getPath() {
@@ -165,18 +178,18 @@ public class Field {
     /**
      * Set up path of hero. Used in tests only
      *
-     * @param path
+     * @param path  the path to override
      * @deprecated  to be used in tests only
      */
-    public void setPath(List<Tile> path) {
+    void setPath(List<Tile> path) {
         this.path = path;
     }
 
     /**
-     * Moves hero according to specified differences in x/y coordinates
+     * Moves hero according to specified differences in x/y coordinates.
      *
-     * @param dx
-     * @param dy
+     * @param dx the change to be applied to hero X coordinate
+     * @param dy the change to be applied to hero X coordinate
      */
     public void moveHero(int dx, int dy) {
         int oldX = hero.x;
@@ -184,8 +197,8 @@ public class Field {
         int newX = oldX + dx;
         int newY = oldY + dy;
 
-        if (newX >= 0 && newY >= 0 &&
-            newX < getCols() && newY < getRows()) {
+        if (newX >= 0 && newY >= 0
+                && newX < getCols() && newY < getRows()) {
             Tile oldTile = getTileFromField(oldX, oldY);
             if (oldTile.state == TileState.EARTH) {
                 oldTile.state = TileState.PATH;
@@ -210,10 +223,11 @@ public class Field {
     }
 
     /**
-     * Moves enemy according to specified dx,dy
+     * Moves enemy according by the specified dx,dy.
      *
-     * @param dx
-     * @param dy
+     * @param enemy the enemy to move
+     * @param dx the change to be applied to enemy X coordinate
+     * @param dy the change to be applied to enemy Y coordinate
      */
     public void moveEnemy(Tile enemy, int dx, int dy) {
         int oldX = enemy.x;
@@ -253,13 +267,25 @@ public class Field {
         }
     }
 
+    /**
+     * Check whether enemy can move to the new field defined by the specified changes
+     * in X/Y coordinate.
+     *
+     * @param enemy the enemy to check possibility of movement for
+     * @param dx the desired change in X-coordinate
+     * @param dy the desired change in Y-coordinate
+     * @return true if enemy can move there, false otherwise
+     */
     public boolean canMoveEnemy(Tile enemy, int dx, int dy) {
         Tile newTile = getTile(enemy.x + dx, enemy.y + dy);
         return newTile != null
-                && (newTile.state == TileState.EARTH || newTile.state == TileState.HERO || newTile.state == TileState.PATH);
+                && (newTile.state == TileState.EARTH
+                    || newTile.state == TileState.HERO || newTile.state == TileState.PATH);
     }
 
     /**
+     * Used to find out the current state of hero.
+     *
      * @return tile of hero along with it's current position
      */
     public Tile getHero() {
@@ -267,6 +293,8 @@ public class Field {
     }
 
     /**
+     * Used to find out current state of all enemies on the field.
+     *
      * @return enemies tiles
      */
     public List<Tile> getEnemies() {
@@ -274,19 +302,14 @@ public class Field {
     }
 
     /**
-     * Notify all field change listeners about some changes in specified tile
+     * Notify all field change listeners about some changes in specified tile.
      *
-     * @param tile
+     * @param tile the tile that was changed
      */
     private void fireChange(Tile tile) {
         fireChange(new FieldChangeEvent(tile.x, tile.y, 1, 1));
     }
 
-    /**
-     * Notify all field change listeners with specified field change event
-     *
-     * @param e
-     */
     private void fireChange(FieldChangeEvent e) {
         if (changeListeners != null) {
             for (int i = changeListeners.size() - 1; i >= 0; i--) {
@@ -295,12 +318,7 @@ public class Field {
         }
     }
 
-    /**
-     * Register specified field change listener to listen events from this field object
-     *
-     * @param l
-     */
-    public void addChangeListener(FieldChangeListener l) {
+    void addChangeListener(FieldChangeListener l) {
         if (changeListeners == null) {
             changeListeners = new ArrayList<>();
         }
@@ -308,12 +326,7 @@ public class Field {
         changeListeners.add(l);
     }
 
-    /**
-     * Un-register specified field change listener
-     *
-     * @param l
-     */
-    public void removeChangeListener(FieldChangeListener l) {
+    void removeChangeListener(FieldChangeListener l) {
         Optional.ofNullable(changeListeners).ifPresent(lst -> lst.remove(l));
     }
 
@@ -325,14 +338,14 @@ public class Field {
         }
     }
 
-    public void addCutListener(FieldCutListener l) {
+    void addCutListener(FieldCutListener l) {
         if (cutListeners == null) {
             cutListeners = new ArrayList<>();
         }
         cutListeners.add(l);
     }
 
-    public void removeCutListener(FieldCutListener l) {
+    void removeCutListener(FieldCutListener l) {
         Optional.ofNullable(cutListeners).ifPresent(lst -> lst.remove(l));
     }
 
@@ -344,14 +357,14 @@ public class Field {
         }
     }
 
-    public void addScoreChangeListener(ScoreChangeListener l) {
+    void addScoreChangeListener(ScoreChangeListener l) {
         if (scoreChangeListeners == null) {
             scoreChangeListeners = new ArrayList<>();
         }
         scoreChangeListeners.add(l);
     }
 
-    public void removeScoreChangeListener(ScoreChangeListener l) {
+    void removeScoreChangeListener(ScoreChangeListener l) {
         Optional.ofNullable(scoreChangeListeners).ifPresent(lst -> lst.remove(l));
     }
 }

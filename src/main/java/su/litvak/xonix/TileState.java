@@ -1,6 +1,6 @@
 package su.litvak.xonix;
 
-import java.awt.*;
+import java.awt.Color;
 
 public enum TileState {
     EARTH('+', Color.YELLOW),

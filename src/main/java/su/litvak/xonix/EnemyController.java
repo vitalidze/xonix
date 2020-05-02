@@ -1,8 +1,9 @@
 package su.litvak.xonix;
 
-import java.util.concurrent.*;
-
-import javax.swing.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import javax.swing.SwingUtilities;
 
 public class EnemyController {
     private Field field;
@@ -41,12 +42,16 @@ public class EnemyController {
         }
     }
 
+    /**
+     * Start moving all enemies on the field.
+     */
     public void startEnemies() {
         if (threadPool != null) {
             threadPool.shutdown();
         }
         threadPool = Executors.newSingleThreadScheduledExecutor();
 
-        field.getEnemies().forEach(e -> threadPool.scheduleAtFixedRate(new EnemyMover(e), 500, 100, TimeUnit.MILLISECONDS));
+        field.getEnemies().forEach(e ->
+                threadPool.scheduleAtFixedRate(new EnemyMover(e), 500, 100, TimeUnit.MILLISECONDS));
     }
 }

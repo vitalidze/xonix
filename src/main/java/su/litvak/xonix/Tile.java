@@ -1,6 +1,6 @@
 package su.litvak.xonix;
 
-import java.awt.*;
+import java.awt.Point;
 
 public class Tile extends Point {
     TileState state;

@@ -1,13 +1,9 @@
 package su.litvak.xonix;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.awt.BorderLayout;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.WindowConstants;
 
 public class Frame extends JFrame {
     JPanel jpMain = new JPanel();
@@ -15,6 +11,9 @@ public class Frame extends JFrame {
     ToolbarPanel jpToolbar;
     FieldPanel jpField;
 
+    /**
+     * Create a new instance of the main frame.
+     */
     public Frame() {
         setTitle("Xonix");
         setResizable(false);
@@ -23,16 +22,12 @@ public class Frame extends JFrame {
         jpField = new FieldPanel();
         jpToolbar = new ToolbarPanel(jpMain);
 
-        /**
-         * Initialize main panel
-         */
+        // Initialize main panel
         jpMain.setLayout(new BorderLayout());
         jpMain.add(jpToolbar, BorderLayout.PAGE_START);
         jpMain.add(jpField, BorderLayout.CENTER);
 
-        /**
-         * Put main panel to the content pane
-         */
+        // Put main panel to the content pane
         getContentPane().add(jpMain);
 
         setVisible(true);
@@ -40,9 +35,9 @@ public class Frame extends JFrame {
     }
 
     /**
-     * Initializes frame with specified field
+     * Initializes frame with specified field.
      *
-     * @param field
+     * @param field data model
      */
     public void setField(Field field) {
         setTitle("Xonix " + (field.getCols() - 2) + "x" + (field.getRows() - 2));
@@ -50,15 +45,13 @@ public class Frame extends JFrame {
         jpField.setField(field);
         jpToolbar.setField(field);
 
-        /**
-         * Show frame in the middle
-         */
+        // Show frame in the middle
         int w = getPreferredSize().width;
         int h = getPreferredSize().height;
 
-        int sW = getToolkit().getScreenSize().width;
-        int sH = getToolkit().getScreenSize().height;
+        int screenWidth = getToolkit().getScreenSize().width;
+        int screenHeight = getToolkit().getScreenSize().height;
 
-        setBounds((sW - w) / 2, (sH - h) / 2, w, h);
+        setBounds((screenWidth - w) / 2, (screenHeight - h) / 2, w, h);
     }
 }

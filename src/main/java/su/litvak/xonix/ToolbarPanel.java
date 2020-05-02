@@ -1,9 +1,12 @@
 package su.litvak.xonix;
 
-import java.awt.*;
-import java.text.*;
-
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.net.URL;
+import java.text.NumberFormat;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 public class ToolbarPanel extends JPanel implements ScoreChangeListener {
     final JPanel jpMain;
@@ -36,23 +39,31 @@ public class ToolbarPanel extends JPanel implements ScoreChangeListener {
     }
 
     /**
+     * Used to find out the curent position of the toolbar.
+     *
      * @return  true if toolbar is at the top of window, false if at the bottom
      */
     private boolean isToolbarOnTop() {
-        return getParent() == null ||
-               ((BorderLayout) jpMain.getLayout()).getConstraints(this).equals(BorderLayout.PAGE_START);
+        if (getParent() == null) {
+            return true;
+        }
+        BorderLayout mainLayout = (BorderLayout) jpMain.getLayout();
+        return mainLayout.getConstraints(this).equals(BorderLayout.PAGE_START);
     }
 
     private void updateBottomTopButton() {
-        btnGoBottomTop.setToolTipText("Move tool bar to the " + (isToolbarOnTop() ? "bottom" : "top"));
+        btnGoBottomTop.setToolTipText("Move tool bar to the "
+                + (isToolbarOnTop() ? "bottom" : "top"));
         btnGoBottomTop.setIcon(getImage("go-" + (isToolbarOnTop() ? "bottom" : "top") + ".png"));
     }
 
     private ImageIcon getImage(String fileName) {
-        return new ImageIcon(Thread.currentThread().getContextClassLoader().getResource("images/" + fileName));
+        URL imageUrl = Thread.currentThread().getContextClassLoader()
+                .getResource("images/" + fileName);
+        return new ImageIcon(imageUrl);
     }
 
-    public void setField(Field field) {
+    void setField(Field field) {
         if (this.field != null) {
             updateScore(0);
             this.field.removeScoreChangeListener(this);
@@ -69,7 +80,8 @@ public class ToolbarPanel extends JPanel implements ScoreChangeListener {
 
     private void updateScore(int score) {
         double percent = getTotalScore() == 0 ? 0d : (double) score / getTotalScore();
-        lblScore.setText(String.format("Score: %d / %d (%s)", score, getTotalScore(), percentFormatter.format(percent)));
+        lblScore.setText(String.format("Score: %d / %d (%s)",
+                score, getTotalScore(), percentFormatter.format(percent)));
     }
 
     @Override
