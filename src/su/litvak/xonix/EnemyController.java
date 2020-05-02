@@ -24,13 +24,13 @@ public class EnemyController {
 
         @Override
         public void run() {
-            if (field.getTile(enemy.x + dx, enemy.y + dy).state == TileState.EARTH) {
+            if (field.canMoveEnemy(enemy, dx, dy)) {
                 SwingUtilities.invokeLater(() ->  field.moveEnemy(enemy, dx, dy));
                 // change direction
             } else {
-                if (field.getTile(enemy.x + dx, enemy.y).state == TileState.EARTH) {
+                if (field.canMoveEnemy(enemy, dx, 0)) {
                     dy *= -1;
-                } else if (field.getTile(enemy.x, enemy.y + dy).state == TileState.EARTH) {
+                } else if (field.canMoveEnemy(enemy, 0, dy)) {
                     dx *= -1;
                 } else {
                     dx *= -1;

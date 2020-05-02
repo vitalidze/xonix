@@ -221,15 +221,42 @@ public class Field {
         int newX = oldX + dx;
         int newY = oldY + dy;
 
-        if (Optional.ofNullable(getTileFromField(newX, newY))
-                .map(t -> t.state)
-                .orElse(TileState.WATER) == TileState.EARTH) {
-            enemy.x = newX;
-            enemy.y = newY;
+        Tile newTile = getTileFromField(newX, newY);
+        if (newTile != null) {
+            // kill hero and clear path
+            if (newTile.state == TileState.HERO || newTile.state == TileState.PATH) {
+                getPath().forEach(tile -> {
+                    tile.state = TileState.EARTH;
+                    fireChange(tile);
+                    score--;
+                });
+                getPath().clear();
+                int oldHeroX = hero.x;
+                int oldHeroY = hero.y;
+                if (getTileFromField(oldHeroX, oldHeroY).state == TileState.EARTH) {
+                    score--;
+                }
+                hero.x = 0;
+                hero.y = 0;
+                fireChange(getTileFromField(oldHeroX, oldHeroY));
+                fireChange(hero);
+                fireScoreChanged();
+            }
+            // move enemy
+            if (newTile.state == TileState.EARTH) {
+                enemy.x = newX;
+                enemy.y = newY;
 
-            fireChange(getTile(oldX, oldY));
-            fireChange(getTile(newX, newY));
+                fireChange(getTile(oldX, oldY));
+                fireChange(newTile);
+            }
         }
+    }
+
+    public boolean canMoveEnemy(Tile enemy, int dx, int dy) {
+        Tile newTile = getTile(enemy.x + dx, enemy.y + dy);
+        return newTile != null
+                && (newTile.state == TileState.EARTH || newTile.state == TileState.HERO || newTile.state == TileState.PATH);
     }
 
     /**
