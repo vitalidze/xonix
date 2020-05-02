@@ -3,23 +3,25 @@ package su.litvak.xonix;
 import javax.swing.*;
 import java.awt.*;
 
+import org.slf4j.*;
+
 public class FieldPanel extends JPanel implements FieldChangeListener {
     final static Dimension TILE_SIZE = new Dimension(25, 25);
     final static Insets TILE_INSETS = new Insets(1, 1, 1, 1);
 
+    Logger log = LoggerFactory.getLogger(FieldPanel.class);
+
     Field field;
-    Controller controller;
+    HeroController heroController;
+    EnemyController enemyController;
     JLabel[][] labels;
 
     public FieldPanel() {
-        this.controller = new Controller();
+        this.heroController = new HeroController();
+        this.enemyController = new EnemyController();
 
         setLayout(new GridBagLayout());
         setBackground(Color.BLUE);
-        /**
-         * Set up hero movement actions
-         */
-        controller.registerHeroMovements(this);
     }
 
     public void setField(Field field) {
@@ -28,7 +30,8 @@ public class FieldPanel extends JPanel implements FieldChangeListener {
             this.field.removeChangeListener(this);
         }
 
-        controller.setField(field);
+        heroController.setField(field);
+        enemyController.setField(field);
         this.field = field;
         this.field.addChangeListener(this);
 
@@ -50,6 +53,8 @@ public class FieldPanel extends JPanel implements FieldChangeListener {
         }
 
         fieldChanged(new FieldChangeEvent(0, 0, field.getCols(), field.getRows()));
+        enemyController.startEnemies();
+        heroController.registerHeroMovements(this);
     }
 
     /**

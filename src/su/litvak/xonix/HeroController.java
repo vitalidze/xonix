@@ -4,7 +4,8 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-public class Controller {
+public class HeroController
+{
     private Field field;
 
     private class HeroMoveAction extends AbstractAction {

@@ -198,10 +198,40 @@ public class Field {
     }
 
     /**
+     * Moves enemy according to specified dx,dy
+     *
+     * @param dx
+     * @param dy
+     */
+    public void moveEnemy(Tile enemy, int dx, int dy) {
+        int oldX = enemy.x;
+        int oldY = enemy.y;
+        int newX = oldX + dx;
+        int newY = oldY + dy;
+
+        if (Optional.ofNullable(getTileFromField(newX, newY))
+                .map(t -> t.state)
+                .orElse(TileState.WATER) == TileState.EARTH) {
+            enemy.x = newX;
+            enemy.y = newY;
+
+            fireChange(getTile(oldX, oldY));
+            fireChange(getTile(newX, newY));
+        }
+    }
+
+    /**
      * @return tile of hero along with it's current position
      */
     public Tile getHero() {
         return hero;
+    }
+
+    /**
+     * @return enemies tiles
+     */
+    public List<Tile> getEnemies() {
+        return Collections.unmodifiableList(enemies);
     }
 
     /**
