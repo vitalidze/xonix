@@ -48,16 +48,16 @@ public class Field {
 
     @Override
     public String toString() {
-        String result = "";
+        StringBuilder result = new StringBuilder("");
 
         for (int y = 0; y < getRows(); y++) {
             for (int x = 0; x < getCols(); x++) {
-                result += getTile(x, y).state.symbol + " ";
+                result.append(getTile(x, y).state.symbol).append(" ");
             }
-            result += "\r\n";
+            result.append("\r\n");
         }
 
-        return result;
+        return result.toString();
     }
 
     /**
